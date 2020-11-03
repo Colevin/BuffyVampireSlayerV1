@@ -52,7 +52,7 @@ public class Game {
 	public void removeDead() {
 		if (vampireList.Delete())
 			vampireManager.setVampiresAliveToAppear(vampireManager.getVampiresAliveToAppear() - 1);
-		slayerList.Delete();
+			slayerList.Delete();
 	}
 
 	public boolean checkEmpty(int x, int y) {
@@ -107,11 +107,10 @@ public class Game {
 
 	// TO STRING
 	public String toString() {
-		int outputVamp = level.getNumberOfVampires() - vampireManager.getVampiresAliveToAppear();
 		String row1 = "Number of cycles: " + numCycles;
 		String row2 = "\nCoins: " + coins.getCoins();
 		String row3 = "\nRemaining vampires: " + vampireManager.getVampiresAliveToAppear();
-		String row4 = "\nVampires on the board: " + outputVamp;
+		String row4 = "\nVampires on the board: " + vampireList.getcounter();
 
 		return row1 + row2 + row3 + row4 + gamePrinter.toString();
 	}

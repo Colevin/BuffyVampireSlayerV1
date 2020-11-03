@@ -90,7 +90,8 @@ public class Controller {
 				System.out.println("[n]one | []: update");
 			} else if (comand[0].equals("") || comand[0].equals("none")) {
 				coins = true;
-				int vampireRow = new Random().nextInt(game.getRow() - 1);
+				int getRow = game.getColumn();
+				int vampireRow = game.getRand().nextInt(getRow);
 				if (game.getVampireManager().toAddVampire() && game.checkEmpty(vampireRow, game.getColumn() - 1)) {
 					Vampire vampire = new Vampire(vampireRow, game.getColumn() - 1, game);
 					game.getVampireList().Add(vampire);

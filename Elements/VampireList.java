@@ -20,13 +20,14 @@ public class VampireList {
 	public boolean Delete() {
 		boolean deleted = false;
 		for (int i = 0; i < counter; i++) {
-			if (counter > 0 && list[i].getHealthPoints() <= 0) {
-				list[i] = list[i + 1];
+			if (list[i].getHealthPoints() <= 0) {
+				for(int j = i; j < counter; j++) {
+					list[j] = list[j + 1];
+					deleted = true;
+				}
 				counter--;
-				deleted = true;
 			}
 		}
-
 		return deleted;
 	}
 

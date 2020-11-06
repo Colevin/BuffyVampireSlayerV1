@@ -24,7 +24,7 @@ public class VampireManager {
 	public boolean winVampire() {
 		boolean winnerVampire = false;
 		int i = 0;
-		while (i < game.getVampireList().getcounter() && !winnerVampire) {
+		while (i < game.getCounterV() && !winnerVampire) {
 			if (game.checkWinnerVampire()) {
 				winnerVampire = true;
 			}

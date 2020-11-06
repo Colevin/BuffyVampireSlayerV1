@@ -10,9 +10,9 @@ public class SlayerList {
 		list = new Slayer[BOARD_SIZE];
 	}
 
-	public boolean Add(Slayer SlayerList) {
+	public boolean Add(Slayer slayer) {
 		if (counter < BOARD_SIZE) {
-			list[counter] = SlayerList;
+			list[counter] = slayer;
 			counter++;
 		}
 		return counter < BOARD_SIZE;

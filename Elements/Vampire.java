@@ -29,7 +29,7 @@ public class Vampire {
 			// UN ELSE PARA ATACAR
 			this.y = this.y;
 		} else {
-			if (!game.getVampireList().vampireFound(x, y - 1)) {
+			if (!game.seeClose(x,y)) {
 				// AQUI ATACO
 				game.attackToSlayer(x, y - 1, damage);
 			}

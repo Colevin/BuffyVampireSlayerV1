@@ -2,25 +2,26 @@ package logic;
 
 import java.util.Random;
 
-import Elements.SlayerList;
-import Elements.VampireList;
+import Elements.Board;
+import Elements.Slayer;
+import Elements.Vampire;
 import Elements.VampireManager;
 import view.GamePrinter;
 
 public class Game {
-	// atributos
-	private SlayerList slayerList;
-	private VampireList vampireList;
+	// Atributos
+	private Board board;
+
 	private GamePrinter gamePrinter;
 	private VampireManager vampireManager;
-	private Player coins;
+	private Player player;
 	private Level level;
 	private Random rand;
 	private int numCycles;
 	private final int row = 7;
 	private final int column = 4;
 
-	// constuctor
+	// Constuctor
 	public Game(Level level, Random rand) {
 		this.level = level;
 		this.rand = rand;
@@ -29,19 +30,18 @@ public class Game {
 
 	// GAME STUFF
 	public void update() {
-		slayerList.update();
-		vampireList.update();
+		board.update();
 		this.removeDead();
-		this.coins.calculateCoinCicle();
+		this.player.calculateCoinCicle();
 	}
 
 	public void inicializar() {
-		vampireList = new VampireList();
-		slayerList = new SlayerList();
+		this.board = new Board();
+		board.initialize();
 		numCycles = 0;
 		this.gamePrinter = new GamePrinter(this, row, column);
-		this.coins = new Player(this);
-		coins.setCoins(50);
+		this.player = new Player(this);
+		player.setCoins(50);
 		this.vampireManager = new VampireManager(this);
 	}
 
@@ -50,17 +50,14 @@ public class Game {
 	}
 
 	public void removeDead() {
-		if (vampireList.Delete())
+		if (board.deleteVamp())
 			vampireManager.setVampiresAliveToAppear(vampireManager.getVampiresAliveToAppear() - 1);
-			slayerList.Delete();
+		board.deleteSlayer();
+		;
 	}
 
 	public boolean checkEmpty(int x, int y) {
-		boolean empty = false;
-		if (!slayerList.foundSlayer(x, y) && !vampireList.vampireFound(x, y)) {
-			empty = true;
-		}
-		return empty;
+		return board.checkEmpty(x, y);
 	}
 
 	public boolean insideBoard(String x, String y) {
@@ -69,50 +66,91 @@ public class Game {
 	}
 
 	public String getObject(int x, int y) {
-		String str;
-		if (slayerList.foundSlayer(x, y)) {
-			str = slayerList.printPosition(slayerList.searchPosition(x, y));
-		} else if (vampireList.vampireFound(x, y)) {
-			str = vampireList.printPosition(vampireList.searchPosition(x, y));
-		} else {
-			str = " ";
-		}
-		return str;
+		return board.getObject(x, y);
 	}
 
 	// SLAYER STUFF
 	public void attackToVampire(int x, int damage) {
 		int i = 0;
-		while (i < column && !vampireList.vampireFound(x, i)) {
+		while (i < column && !board.foundVampire(x, i)) {
 			i++;
 		}
-		if (vampireList.vampireFound(x, i)) {
-			vampireList.decreaseHealth(vampireList.searchPosition(x, i), damage);
+		if (board.foundVampire(x, i)) {
+			board.vampDecreaseHealth(board.searchPositionV(x, i), damage);
 		}
 	}
 
 	// VAMPIRE STUFF
 	public void attackToSlayer(int x, int y, int damage) {
-		if (slayerList.foundSlayer(x, y)) {
-			slayerList.decreaseHealth(slayerList.searchPosition(x, y), damage);
+		if (board.foundSlayer(x, y)) {
+			board.slayDecreaseHealth(board.searchPositionS(x, y), damage);
 		}
+	}
+	public boolean seeClose(int x , int y) {
+		return board.foundVampire(x, y-1);
 	}
 
 	public boolean checkWinnerVampire() {
-		boolean found = false;
-		if (vampireList.winnerVampire())
-			found = true;
-		return found;
+		return board.checkWinnerVampire();
+	}
+	public int getCounterV() {
+		return board.vampCounter();
 	}
 
 	// TO STRING
 	public String toString() {
 		String row1 = "Number of cycles: " + numCycles;
-		String row2 = "\nCoins: " + coins.getCoins();
+		String row2 = "\nCoins: " + player.getCoins();
 		String row3 = "\nRemaining vampires: " + vampireManager.getVampiresAliveToAppear();
-		String row4 = "\nVampires on the board: " + vampireList.getcounter();
+		String row4 = "\nVampires on the board: " + getCounterV();
 
 		return row1 + row2 + row3 + row4 + gamePrinter.toString();
+	}
+
+	// COMANDOS
+	public void addCommandExe(int param1, int param2) {
+		if (checkEmpty(param1, param2) && insideBoard(Integer.toString(param1), Integer.toString(param2))) {
+			// HAY DINERO
+			if (player.getCoins() >= Slayer.getCost()) {
+				player.setCoins(player.getCoins() - Slayer.getCost());
+				// CREAR Y AÑADIR EL BICHO EN LA LISTA
+				Slayer s = new Slayer(param1, param2, this);
+				board.addSlayer(s);
+				// AVANCE O CREACION DE VAMPIRO
+				int vampireRow = rand.nextInt(getRow() - 1);
+				if (vampireManager.toAddVampire() && checkEmpty(vampireRow, getColumn() - 1)) {
+					Vampire vampire = new Vampire(vampireRow, getColumn() - 1, this);
+					board.addVamp(vampire);
+					vampireManager.setVampires(vampireManager.getLeftVampires() - 1);
+				}
+				addCycle();
+			} else {
+				System.out.println("You dont have enought coins");
+			}
+		}
+	}
+
+	public void noCommandExe() {
+		int getRow = getColumn();
+		int vampireRow = getRand().nextInt(getRow);
+		if (vampireManager.toAddVampire() && checkEmpty(vampireRow, getColumn() - 1)) {
+			Vampire vampire = new Vampire(vampireRow, getColumn() - 1, this);
+			board.addVamp(vampire);
+			vampireManager.setVampires(vampireManager.getLeftVampires() - 1);
+		}
+		addCycle();
+	}
+
+	public boolean vampiresLeft() {
+		return vampireManager.getVampiresAliveToAppear() > 0;
+	}
+
+	public boolean winVamp() {
+		return vampireManager.winVampire();
+	}
+
+	public void updateGamePrinter() {
+		this.setGamePrinter(new GamePrinter(this, this.row, this.column));
 	}
 
 	// GETTERS Y SETTERS
@@ -120,24 +158,12 @@ public class Game {
 		return level;
 	}
 
-	public SlayerList getSlayerList() {
-		return slayerList;
-	}
-
 	public void setGamePrinter(GamePrinter gamePrinter) {
 		this.gamePrinter = gamePrinter;
 	}
 
-	public VampireList getVampireList() {
-		return vampireList;
-	}
-
 	public Random getRand() {
 		return rand;
-	}
-
-	public Player getcoins() {
-		return coins;
 	}
 
 	public int getNumCycles() {
